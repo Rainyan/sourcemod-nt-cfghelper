@@ -29,7 +29,7 @@ public Plugin:myinfo =
 	description = "Help players whose config appears maliciously overwritten",
 	version = PLUGIN_VERSION,
 	url = ""
-}
+};
 
 public OnPluginStart()
 {
