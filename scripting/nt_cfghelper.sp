@@ -148,7 +148,7 @@ public Action:SayCallback(client, const String:command[], argc)
 			PrintToAdmins("\"%s\"", message);
 			PrintToAdmins("Blocked message, gagged, and instructed player on fixing configs.", " ");
 			
-			LogToGame("[SM] Gagged %s for spamming, string was: \"%s\".", clientName, message);
+			LogToGame("[SM] Gagged %s for triggering the hacked cfg detection. Chat message spammed was: \"%s\".", clientName, message);
 			
 			PrintToChat(client, "[SM] You have been gagged for typing this message:");
 			PrintToChat(client, "\"%s\"", message);
@@ -167,7 +167,7 @@ public Action:SayCallback(client, const String:command[], argc)
 
 public Action:KickSoonAfter(Handle:timer, any:client)
 {
-	KickClient(client, "Reset all keys to default. Please restart the game to save these changes.");
+	KickClient(client, "All keys were reset to default. Please restart the game to save these changes.");
 }
 
 stock PrintToAdmins(const String:message[256], const String:name[256])
