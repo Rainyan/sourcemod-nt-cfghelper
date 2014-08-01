@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.1"
 
 #define NONE 2
 #define YES 1
@@ -40,6 +40,7 @@ public OnPluginStart()
 	HookEvent("player_changename", Event_nameCheck, EventHookMode_Pre);
 	
 	RegConsoleCmd("sm_stop", Command_CancelRebind);
+	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
 }
 
 public OnConfigsExecuted()
@@ -125,6 +126,12 @@ public Action:Command_CancelRebind(client, args)
 		PrintToChat(client, "[SM] Ok, will rebind your keys to default.");
 	}
 
+	return Plugin_Handled;
+}
+
+public Action:Command_FixMyConfig(client, args)
+{
+	OfferRebind(client);
 	return Plugin_Handled;
 }
 
