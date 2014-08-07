@@ -132,7 +132,6 @@ public Action:Command_CancelRebind(client, args)
 public Action:Command_FixMyConfig(client, args)
 {
 	OfferRebind(client);
-	return Plugin_Handled;
 }
 
 public Action:SayCallback(client, const String:command[], argc)
