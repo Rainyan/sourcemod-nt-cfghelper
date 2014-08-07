@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.1"
 
 #define NONE 2
 #define YES 1
@@ -20,7 +20,6 @@ new chatSpamDetections[MAXPLAYERS+1] = 0;
 new wantsRebind[MAXPLAYERS+1] = NONE;
 new String:fileName[PLATFORM_MAX_PATH];
 new String:phrases[256][64];
-
 new lines;
 
 public Plugin:myinfo = 
@@ -199,21 +198,14 @@ bool:IsValidAdmin(client)
 
 bool:HasMaliciousCfg(String:sample[256])
 {
-	new String:cleanedMessage[sizeof(sample) + 1];
-	new pos_cleanedMessage = 0;
-	
-	for (new i = 0; i < sizeof(sample); i++)
-	{
-		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
-			cleanedMessage[pos_cleanedMessage++] = sample[i];
-	}
+	StripQuotes(sample);
+	ReplaceString(sample, sizeof(sample), " ", "");
+	ReplaceString(sample, sizeof(sample), "-", "");
+	ReplaceString(sample, sizeof(sample), ".", "");
 
-	// Terminate the string with 0
-	cleanedMessage[pos_cleanedMessage] = '\0';
-	
 	for (new i = 0; i < lines; i++)
 	{
-		if (StrContains(cleanedMessage, phrases[i], false) != -1)
+		if (StrContains(sample, phrases[i], false) != -1)
 			return true;
 	}
 	
@@ -237,21 +229,16 @@ public Action:ReadConfig()
 
 		if (!ReadFileLine(file, line, sizeof(line)))
 			break;
-		
-		new String:cleanedMessage[sizeof(line) + 1];
-		new pos_cleanedMessage = 0;
-		
-		for (new i = 0; i < sizeof(line); i++)
-		{
-			if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
-				continue;
-		
-			if (IsCharAlpha(line[i]) || IsCharNumeric(line[i]))
-				cleanedMessage[pos_cleanedMessage++] = line[i];
-		}
 
-		// Terminate the string with 0
-		cleanedMessage[pos_cleanedMessage] = '\0';
+		TrimString(line);
+		StripQuotes(line);
+		ReplaceString(line, sizeof(line), " ", "");
+		ReplaceString(line, sizeof(line), " ", "");
+		ReplaceString(line, sizeof(line), "-", "");
+		ReplaceString(line, sizeof(line), ".", "");
+
+		if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
+			continue;
 
 		strcopy(phrases[lines], sizeof(phrases[]), line);
 		lines++;
