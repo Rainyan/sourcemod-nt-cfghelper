@@ -36,8 +36,8 @@ public OnPluginStart()
 	AddCommandListener(SayCallback, "say");
 	AddCommandListener(SayCallback, "say_team");
 	
-	HookEvent("player_activate", Event_nameCheck, EventHookMode_Pre);
-	HookEvent("player_changename", Event_nameCheck, EventHookMode_Pre);
+	HookEvent("player_activate", Event_NameCheck, EventHookMode_Pre);
+	HookEvent("player_changename", Event_NameCheck, EventHookMode_Pre);
 	
 	RegConsoleCmd("sm_stop", Command_CancelRebind);
 	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
@@ -62,7 +62,7 @@ public OnClientDisconnect(client)
 	wantsRebind[client] = NONE;
 }
 
-public Action:Event_nameCheck(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new userid = GetEventInt(event, "userid");
 	new client = GetClientOfUserId(userid);
