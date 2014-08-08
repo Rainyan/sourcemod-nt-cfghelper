@@ -162,12 +162,14 @@ public Action:Command_FixConfig(client, args)
 public Action:Command_FixMyConfig(client, args)
 {
 	OfferRebind(client);
+	return Plugin_Handled;
 }
 
 public Action:Command_ReloadPhrases(client, args)
 {
 	ReadConfig();
 	PrintToChat(client, "[SM] CFG Helper filter phrases reloaded");
+	return Plugin_Handled;
 }
 
 public Action:SayCallback(client, const String:command[], argc)
