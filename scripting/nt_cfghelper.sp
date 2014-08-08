@@ -149,7 +149,6 @@ public Action:SayCallback(client, const String:command[], argc)
 		if (chatSpamDetections[client] >= 3)
 		{
 			BaseComm_SetClientGag(client, true);
-			//BaseComm_SetClientMute(client, true);
 			
 			PrintToAdmins("To admins: %s triggered hacked cfg detection by typing:", clientName);
 			PrintToAdmins("\"%s\"", message);
@@ -167,8 +166,10 @@ public Action:SayCallback(client, const String:command[], argc)
 		} else {
 			PrintToChat(client, "[SM] Your chat message has been blocked for triggering a spam filter.");
 		}
+		
 		return Plugin_Stop;
 	} 
+	
 	return Plugin_Continue;
 }
 
@@ -202,6 +203,7 @@ bool:HasMaliciousCfg(String:sample[256])
 	new String:cleanedMessage[sizeof(sample) + 1];
 	new pos_cleanedMessage = 0;
 	
+	// Trim all non-alphanumeric characters
 	for (new i = 0; i < sizeof(sample); i++)
 	{
 		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
@@ -237,21 +239,11 @@ public Action:ReadConfig()
 
 		if (!ReadFileLine(file, line, sizeof(line)))
 			break;
-		
-		new String:cleanedMessage[sizeof(line) + 1];
-		new pos_cleanedMessage = 0;
-		
-		for (new i = 0; i < sizeof(line); i++)
-		{
-			if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
-				continue;
-		
-			if (IsCharAlpha(line[i]) || IsCharNumeric(line[i]))
-				cleanedMessage[pos_cleanedMessage++] = line[i];
-		}
 
-		// Terminate the string with 0
-		cleanedMessage[pos_cleanedMessage] = '\0';
+		TrimString(line);
+
+		if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
+			continue;
 
 		strcopy(phrases[lines], sizeof(phrases[]), line);
 		lines++;
