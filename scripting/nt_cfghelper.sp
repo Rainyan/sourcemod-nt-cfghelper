@@ -49,6 +49,7 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
 	ReadConfig();
+	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
 }
 
 public OnMapStart()
@@ -161,6 +162,12 @@ public Action:Command_FixConfig(client, args)
 public Action:Command_FixMyConfig(client, args)
 {
 	OfferRebind(client);
+}
+
+public Action:Command_ReloadPhrases(client, args)
+{
+	ReadConfig();
+	PrintToChat(client, "[SM] CFG Helper filter phrases reloaded");
 }
 
 public Action:SayCallback(client, const String:command[], argc)
