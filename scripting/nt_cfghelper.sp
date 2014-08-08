@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "1.2"
 
 #define NONE 2
 #define YES 1
@@ -20,6 +20,7 @@ new chatSpamDetections[MAXPLAYERS+1] = 0;
 new wantsRebind[MAXPLAYERS+1] = NONE;
 new String:fileName[PLATFORM_MAX_PATH];
 new String:phrases[256][64];
+
 new lines;
 
 public Plugin:myinfo = 
@@ -41,11 +42,14 @@ public OnPluginStart()
 	
 	RegConsoleCmd("sm_stop", Command_CancelRebind);
 	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
+	
+	RegAdminCmd("sm_fixconfig", Command_FixConfig, ADMFLAG_KICK, "Admin command to suggest rebinding to default");
 }
 
 public OnConfigsExecuted()
 {
 	ReadConfig();
+	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
 }
 
 public OnMapStart()
@@ -129,13 +133,50 @@ public Action:Command_CancelRebind(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Command_FixConfig(client, args)
+{
+	if (args != 1)
+	{
+		PrintToChat(client, "[SM] Usage: !fixconfig \"playername\"");
+		return Plugin_Handled;
+	}
+
+	new String:arg1[MAX_NAME_LENGTH];
+	GetCmdArg(1, arg1, sizeof(arg1));
+
+	new target = FindTarget(client, arg1);
+	
+	if (target == -1)
+		return Plugin_Handled;
+	
+	OfferRebind(target);
+	
+	new String:targetName[MAX_NAME_LENGTH];
+	GetClientName(target, targetName, sizeof(targetName));
+	
+	PrintToChat(client, "[SM] Offered rebinding to \"%s\"", targetName);
+	
+	return Plugin_Handled;
+}
+
 public Action:Command_FixMyConfig(client, args)
 {
 	OfferRebind(client);
+	return Plugin_Handled;
+}
+
+public Action:Command_ReloadPhrases(client, args)
+{
+	ReadConfig();
+	PrintToChat(client, "[SM] CFG Helper filter phrases reloaded");
+	return Plugin_Handled;
 }
 
 public Action:SayCallback(client, const String:command[], argc)
 {
+	if (client == 0) // Message sent by server, don't check
+		return Plugin_Continue;
+
 	new String:message[256];
 	GetCmdArgString(message, sizeof(message));
 	
@@ -148,7 +189,6 @@ public Action:SayCallback(client, const String:command[], argc)
 		if (chatSpamDetections[client] >= 3)
 		{
 			BaseComm_SetClientGag(client, true);
-			//BaseComm_SetClientMute(client, true);
 			
 			PrintToAdmins("To admins: %s triggered hacked cfg detection by typing:", clientName);
 			PrintToAdmins("\"%s\"", message);
@@ -166,8 +206,10 @@ public Action:SayCallback(client, const String:command[], argc)
 		} else {
 			PrintToChat(client, "[SM] Your chat message has been blocked for triggering a spam filter.");
 		}
+		
 		return Plugin_Stop;
-	} 
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -198,14 +240,22 @@ bool:IsValidAdmin(client)
 
 bool:HasMaliciousCfg(String:sample[256])
 {
-	StripQuotes(sample);
-	ReplaceString(sample, sizeof(sample), " ", "");
-	ReplaceString(sample, sizeof(sample), "-", "");
-	ReplaceString(sample, sizeof(sample), ".", "");
+	new String:cleanedMessage[sizeof(sample) + 1];
+	new pos_cleanedMessage = 0;
+	
+	// Trim all non-alphanumeric characters
+	for (new i = 0; i < sizeof(sample); i++)
+	{
+		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
+			cleanedMessage[pos_cleanedMessage++] = sample[i];
+	}
 
+	// Terminate the string with 0
+	cleanedMessage[pos_cleanedMessage] = '\0';
+	
 	for (new i = 0; i < lines; i++)
 	{
-		if (StrContains(sample, phrases[i], false) != -1)
+		if (StrContains(cleanedMessage, phrases[i], false) != -1)
 			return true;
 	}
 	
@@ -231,11 +281,6 @@ public Action:ReadConfig()
 			break;
 
 		TrimString(line);
-		StripQuotes(line);
-		ReplaceString(line, sizeof(line), " ", "");
-		ReplaceString(line, sizeof(line), " ", "");
-		ReplaceString(line, sizeof(line), "-", "");
-		ReplaceString(line, sizeof(line), ".", "");
 
 		if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
 			continue;
