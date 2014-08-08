@@ -137,6 +137,9 @@ public Action:Command_FixMyConfig(client, args)
 
 public Action:SayCallback(client, const String:command[], argc)
 {
+	if (client == 0) // Message sent by server, don't check
+		return Plugin_Continue;
+
 	new String:message[256];
 	GetCmdArgString(message, sizeof(message));
 	
