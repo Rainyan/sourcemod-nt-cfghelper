@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.2"
+#define PLUGIN_VERSION "1.3"
 
 #define NONE 2
 #define YES 1
@@ -98,15 +98,15 @@ public Action:Timer_Rebind(Handle:timer, any:client)
 	{
 		wantsRebind[client] = NONE;
 		ClientCommand(client, "exec config_default");
+		ClientCommand(client, "host_writeconfig");
 		PrintToConsole(client, "**********");
-		PrintToConsole(client, "[SM] Rebound all your keys back to default.");
-		PrintToConsole(client, "[SM] Please restart the game to save changes.");
+		PrintToConsole(client, "[SM] All your keys have been rebound back to defaults.");
 		PrintToConsole(client, "**********");
-		CreateTimer(0.5, KickSoonAfter, client);
 	}
 	else
 	{
-		PrintToChat(client, "[SM] No rebinding done as requested. However, you will be gagged until the next map.");
+		PrintToChat(client, "[SM] No rebinding done as requested.");
+		PrintToChat(client, "However, you will be gagged until the next map.");
 	}
 	
 	wantsRebind[client] = NONE;
@@ -211,11 +211,6 @@ public Action:SayCallback(client, const String:command[], argc)
 	}
 	
 	return Plugin_Continue;
-}
-
-public Action:KickSoonAfter(Handle:timer, any:client)
-{
-	KickClient(client, "All keys were reset to default. Please restart the game to save these changes.");
 }
 
 stock PrintToAdmins(const String:message[256], const String:name[256])
