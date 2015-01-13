@@ -10,18 +10,21 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.3"
+#define PLUGIN_VERSION "1.4"
 
-#define NONE 2
+#define PHRASES_MAX_AMOUNT 32
+#define PHRASES_MAX_LENGTH 32
+
+#define NONE 0
 #define YES 1
-#define NO 0
+#define NO 2
 
-new chatSpamDetections[MAXPLAYERS+1] = 0;
-new wantsRebind[MAXPLAYERS+1] = NONE;
-new String:fileName[PLATFORM_MAX_PATH];
-new String:phrases[256][64];
-
+new chatSpamDetections[MAXPLAYERS+1];
 new lines;
+new wantsRebind[MAXPLAYERS+1];
+
+new String:fileName[PLATFORM_MAX_PATH];
+new String:phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
 
 public Plugin:myinfo = 
 {
@@ -75,7 +78,7 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 	
 	if (HasMaliciousCfg(clientName))
 	{
-		ClientCommand(client, "name %s", "NeotokyoNoob");
+		ClientCommand(client, "name NeotokyoNoob");
 		PrintToChat(client, "[SM] You were renamed to \"NeotokyoNoob\".");
 		PrintToChat(client, "Your name was previously set to: \"%s\"", clientName);
 		return Plugin_Stop;
@@ -103,6 +106,7 @@ public Action:Timer_Rebind(Handle:timer, any:client)
 		PrintToConsole(client, "[SM] All your keys have been rebound back to defaults.");
 		PrintToConsole(client, "**********");
 	}
+	
 	else
 	{
 		PrintToChat(client, "[SM] No rebinding done as requested.");
@@ -137,7 +141,7 @@ public Action:Command_FixConfig(client, args)
 {
 	if (args != 1)
 	{
-		PrintToChat(client, "[SM] Usage: !fixconfig \"playername\"");
+		ReplyToCommand(client, "[SM] Usage: !fixconfig \"playername\"");
 		return Plugin_Handled;
 	}
 
@@ -154,7 +158,7 @@ public Action:Command_FixConfig(client, args)
 	new String:targetName[MAX_NAME_LENGTH];
 	GetClientName(target, targetName, sizeof(targetName));
 	
-	PrintToChat(client, "[SM] Offered rebinding to \"%s\"", targetName);
+	ReplyToCommand(client, "[SM] Offered rebinding to \"%s\"", targetName);
 	
 	return Plugin_Handled;
 }
@@ -168,13 +172,13 @@ public Action:Command_FixMyConfig(client, args)
 public Action:Command_ReloadPhrases(client, args)
 {
 	ReadConfig();
-	PrintToChat(client, "[SM] CFG Helper filter phrases reloaded");
+	ReplyToCommand(client, "[SM] CFG Helper filter phrases reloaded");
 	return Plugin_Handled;
 }
 
 public Action:SayCallback(client, const String:command[], argc)
 {
-	if (client == 0) // Message sent by server, don't check
+	if (!client) // Message sent by server, don't bother checking
 		return Plugin_Continue;
 
 	new String:message[256];
@@ -236,7 +240,7 @@ bool:IsValidAdmin(client)
 bool:HasMaliciousCfg(String:sample[256])
 {
 	new String:cleanedMessage[sizeof(sample) + 1];
-	new pos_cleanedMessage = 0;
+	new pos_cleanedMessage;
 	
 	// Trim all non-alphanumeric characters
 	for (new i = 0; i < sizeof(sample); i++)
