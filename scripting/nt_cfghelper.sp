@@ -71,53 +71,6 @@ public OnClientDisconnect(client)
 	g_rebindPreference[client] = NONE;
 }
 
-public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new userid = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(userid);
-	new String:clientName[256];
-	GetClientName(client, clientName, sizeof(clientName));
-	
-	if (HasMaliciousCfg(clientName))
-	{
-		ClientCommand(client, "name NeotokyoNoob");
-		PrintToChat(client, "[SM] You were renamed to \"NeotokyoNoob\".");
-		PrintToChat(client, "Your name was previously set to: \"%s\"", clientName);
-		return Plugin_Stop;
-	}
-	
-	return Plugin_Continue;
-}
-
-public Action:OfferRebind(client)
-{
-	g_rebindPreference[client] = YES;
-	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
-	PrintToChat(client, "Type !stop to cancel.");
-	CreateTimer(10.0, Timer_Rebind, client);
-}
-
-public Action:Timer_Rebind(Handle:timer, any:client)
-{
-	if (g_rebindPreference[client] == YES)
-	{
-		g_rebindPreference[client] = NONE;
-		ClientCommand(client, "exec config_default");
-		ClientCommand(client, "host_writeconfig");
-		PrintToConsole(client, "**********");
-		PrintToConsole(client, "[SM] All your keys have been rebound back to defaults.");
-		PrintToConsole(client, "**********");
-	}
-	
-	else
-	{
-		PrintToChat(client, "[SM] No rebinding done as requested.");
-		PrintToChat(client, "However, you will be gagged until the next map.");
-	}
-	
-	g_rebindPreference[client] = NONE;
-}
-
 public Action:Command_CancelRebind(client, args)
 {
 	// ignore cmd if not relevant to player
@@ -178,6 +131,45 @@ public Action:Command_ReloadPhrases(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new userid = GetEventInt(event, "userid");
+	new client = GetClientOfUserId(userid);
+	new String:clientName[256];
+	GetClientName(client, clientName, sizeof(clientName));
+	
+	if (HasMaliciousCfg(clientName))
+	{
+		ClientCommand(client, "name NeotokyoNoob");
+		PrintToChat(client, "[SM] You were renamed to \"NeotokyoNoob\".");
+		PrintToChat(client, "Your name was previously set to: \"%s\"", clientName);
+		return Plugin_Stop;
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action:Timer_Rebind(Handle:timer, any:client)
+{
+	if (g_rebindPreference[client] == YES)
+	{
+		g_rebindPreference[client] = NONE;
+		ClientCommand(client, "exec config_default");
+		ClientCommand(client, "host_writeconfig");
+		PrintToConsole(client, "**********");
+		PrintToConsole(client, "[SM] All your keys have been rebound back to defaults.");
+		PrintToConsole(client, "**********");
+	}
+	
+	else
+	{
+		PrintToChat(client, "[SM] No rebinding done as requested.");
+		PrintToChat(client, "However, you will be gagged until the next map.");
+	}
+	
+	g_rebindPreference[client] = NONE;
+}
+
 public Action:SayCallback(client, const String:command[], argc)
 {
 	if (!client) // Message sent by server, don't bother checking
@@ -219,7 +211,7 @@ public Action:SayCallback(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-stock PrintToAdmins(const String:message[256], const String:name[256])
+void PrintToAdmins(const String:message[256], const String:name[256])
 {
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -231,15 +223,15 @@ stock PrintToAdmins(const String:message[256], const String:name[256])
 	}
 }
 
-bool:IsValidAdmin(client)
+bool IsValidAdmin(client)
 {
 	if ((CheckCommandAccess(client, "sm_kick", ADMFLAG_KICK)) && (IsClientConnected(client)) && (!IsFakeClient(client)))
 		return true;
-
+	
 	return false;
 }
 
-bool:HasMaliciousCfg(String:sample[256])
+bool HasMaliciousCfg(const String:sample[256])
 {
 	new String:cleanedMessage[sizeof(sample) + 1];
 	new pos_cleanedMessage;
@@ -250,7 +242,7 @@ bool:HasMaliciousCfg(String:sample[256])
 		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
 			cleanedMessage[pos_cleanedMessage++] = sample[i];
 	}
-
+	
 	// Terminate the string with 0
 	cleanedMessage[pos_cleanedMessage] = '\0';
 	
@@ -263,7 +255,7 @@ bool:HasMaliciousCfg(String:sample[256])
 	return false;
 }
 
-public Action:ReadConfig()
+void ReadConfig()
 {
 	BuildPath(Path_SM, g_fileName, sizeof(g_fileName), "configs/nt_cfghelper_phrases.ini");
 	new Handle:file = OpenFile(g_fileName, "r");
@@ -291,4 +283,12 @@ public Action:ReadConfig()
 	}
 	
 	CloseHandle(file);
+}
+
+void OfferRebind(client)
+{
+	g_rebindPreference[client] = YES;
+	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
+	PrintToChat(client, "Type !stop to cancel.");
+	CreateTimer(10.0, Timer_Rebind, client);
 }
