@@ -132,7 +132,7 @@ public Action:Command_FixMyConfig(client, args)
 public Action:Command_ReloadPhrases(client, args)
 {
 	ReadConfig();
-	ReplyToCommand(client, "[SM] CFG Helper filter g_phrases reloaded");
+	ReplyToCommand(client, "[SM] CFG Helper filter phrases reloaded");
 	return Plugin_Handled;
 }
 
