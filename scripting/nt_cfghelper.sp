@@ -110,7 +110,7 @@ public Action:Command_FixConfig(client, args)
 	
 	OfferRebind(target);
 	
-	new String:targetName[MAX_NAME_LENGTH];
+	decl String:targetName[MAX_NAME_LENGTH];
 	GetClientName(target, targetName, sizeof(targetName));
 	
 	ReplyToCommand(client, "[SM] Offered rebinding to \"%s\"", targetName);
@@ -135,7 +135,8 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 {
 	new userid = GetEventInt(event, "userid");
 	new client = GetClientOfUserId(userid);
-	new String:clientName[256];
+	
+	decl String:clientName[256];
 	GetClientName(client, clientName, sizeof(clientName));
 	
 	if (HasMaliciousCfg(clientName))
@@ -178,15 +179,15 @@ public Action:SayCallback(client, const String:command[], argc)
 	new String:message[256];
 	GetCmdArgString(message, sizeof(message));
 	
-	new String:clientName[256];
-	GetClientName(client, clientName, sizeof(clientName));
-	
 	if (HasMaliciousCfg(message))
 	{
 		g_chatSpamDetections[client]++;
 		if (g_chatSpamDetections[client] >= 3)
 		{
 			BaseComm_SetClientGag(client, true);
+			
+			decl String:clientName[256];
+			GetClientName(client, clientName, sizeof(clientName));
 			
 			PrintToAdmins("To admins: %s triggered hacked cfg detection by typing:", clientName);
 			PrintToAdmins("\"%s\"", message);
@@ -211,7 +212,7 @@ public Action:SayCallback(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-void PrintToAdmins(const String:message[256], const String:name[256])
+void PrintToAdmins(const String:message[], const String:name[])
 {
 	for (new i = 1; i <= MaxClients; i++)
 	{
@@ -261,15 +262,11 @@ void ReadConfig()
 	new Handle:file = OpenFile(g_fileName, "r");
 
 	if (file == INVALID_HANDLE)
-	{
-		LogError("[nt cfg helper] Couldn't read from %s", g_fileName);
-		SetFailState("Couldn't read from %s", g_fileName);
-	}
+		ThrowError("Couldn't read from %s", g_fileName);
 	
+	decl String:line[64];
 	while (!IsEndOfFile(file))
 	{
-		decl String:line[64];
-
 		if (!ReadFileLine(file, line, sizeof(line)))
 			break;
 
