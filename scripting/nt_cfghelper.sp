@@ -212,15 +212,18 @@ public Action:SayCallback(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-void PrintToAdmins(const String:message[], const String:name[])
+void PrintToAdmins(const String:message[], any ...)
 {
+	decl String:formatMsg[512];
+	VFormat(formatMsg, sizeof(formatMsg), message, 4);
+	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (IsValidAdmin(i))
-		{
-			PrintToChat(i, message, name);
-			PrintToConsole(i, message, name);
-		}
+		if (!IsValidAdmin(i))
+			continue;
+		
+		PrintToChat(i, formatMsg);
+		PrintToConsole(i, formatMsg);
 	}
 }
 
