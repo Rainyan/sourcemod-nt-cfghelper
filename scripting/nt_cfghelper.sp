@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.4"
+#define PLUGIN_VERSION "1.5"
 
 #define PHRASES_MAX_AMOUNT 32
 #define PHRASES_MAX_LENGTH 32
