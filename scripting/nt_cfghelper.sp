@@ -1,8 +1,8 @@
 /*
 	Phrase reading from .ini file borrowed from
 	"Bad name ban" by vIr-Dan and Lebson506th as per the SourceMod licence.
-	http://www.sourcemod.net/license.php
 	https://forums.alliedmods.net/showthread.php?p=498974?p=498974
+	http://www.sourcemod.net/license.php
 */
 
 #pragma semicolon 1
@@ -15,16 +15,18 @@
 #define PHRASES_MAX_AMOUNT 32
 #define PHRASES_MAX_LENGTH 32
 
-#define NONE 0
-#define YES 1
-#define NO 2
+enum {
+	NONE = 0,
+	YES,
+	NO
+};
 
-new chatSpamDetections[MAXPLAYERS+1];
-new lines;
-new wantsRebind[MAXPLAYERS+1];
+new g_lines;
+new g_chatSpamDetections[MAXPLAYERS+1];
+new g_rebindPreference[MAXPLAYERS+1];
 
-new String:fileName[PLATFORM_MAX_PATH];
-new String:phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
+new String:g_fileName[PLATFORM_MAX_PATH];
+new String:g_phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
 
 public Plugin:myinfo = 
 {
@@ -57,16 +59,16 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	for(new i; i < lines; i++)
-		phrases[i] = "";
+	for(new i; i < g_lines; i++)
+		g_phrases[i] = "";
 		
-	lines = 0;
+	g_lines = 0;
 }
 
 public OnClientDisconnect(client)
 {
-	chatSpamDetections[client] = 0;
-	wantsRebind[client] = NONE;
+	g_chatSpamDetections[client] = 0;
+	g_rebindPreference[client] = NONE;
 }
 
 public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadcast)
@@ -89,7 +91,7 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 
 public Action:OfferRebind(client)
 {
-	wantsRebind[client] = YES;
+	g_rebindPreference[client] = YES;
 	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
 	PrintToChat(client, "Type !stop to cancel.");
 	CreateTimer(10.0, Timer_Rebind, client);
@@ -97,9 +99,9 @@ public Action:OfferRebind(client)
 
 public Action:Timer_Rebind(Handle:timer, any:client)
 {
-	if (wantsRebind[client] == YES)
+	if (g_rebindPreference[client] == YES)
 	{
-		wantsRebind[client] = NONE;
+		g_rebindPreference[client] = NONE;
 		ClientCommand(client, "exec config_default");
 		ClientCommand(client, "host_writeconfig");
 		PrintToConsole(client, "**********");
@@ -113,24 +115,24 @@ public Action:Timer_Rebind(Handle:timer, any:client)
 		PrintToChat(client, "However, you will be gagged until the next map.");
 	}
 	
-	wantsRebind[client] = NONE;
+	g_rebindPreference[client] = NONE;
 }
 
 public Action:Command_CancelRebind(client, args)
 {
 	// ignore cmd if not relevant to player
-	if (wantsRebind[client] == NONE)
+	if (g_rebindPreference[client] == NONE)
 		return Plugin_Stop;
 	
-	else if (wantsRebind[client] == YES)
+	else if (g_rebindPreference[client] == YES)
 	{
-		wantsRebind[client] = NO;
+		g_rebindPreference[client] = NO;
 		PrintToChat(client, "[SM] Ok, won't rebind your keys to default.");
 	}
 	
 	else
 	{
-		wantsRebind[client] = YES;
+		g_rebindPreference[client] = YES;
 		PrintToChat(client, "[SM] Ok, will rebind your keys to default.");
 	}
 
@@ -172,7 +174,7 @@ public Action:Command_FixMyConfig(client, args)
 public Action:Command_ReloadPhrases(client, args)
 {
 	ReadConfig();
-	ReplyToCommand(client, "[SM] CFG Helper filter phrases reloaded");
+	ReplyToCommand(client, "[SM] CFG Helper filter g_phrases reloaded");
 	return Plugin_Handled;
 }
 
@@ -189,8 +191,8 @@ public Action:SayCallback(client, const String:command[], argc)
 	
 	if (HasMaliciousCfg(message))
 	{
-		chatSpamDetections[client]++;
-		if (chatSpamDetections[client] >= 3)
+		g_chatSpamDetections[client]++;
+		if (g_chatSpamDetections[client] >= 3)
 		{
 			BaseComm_SetClientGag(client, true);
 			
@@ -252,9 +254,9 @@ bool:HasMaliciousCfg(String:sample[256])
 	// Terminate the string with 0
 	cleanedMessage[pos_cleanedMessage] = '\0';
 	
-	for (new i = 0; i < lines; i++)
+	for (new i = 0; i < g_lines; i++)
 	{
-		if (StrContains(cleanedMessage, phrases[i], false) != -1)
+		if (StrContains(cleanedMessage, g_phrases[i], false) != -1)
 			return true;
 	}
 	
@@ -263,13 +265,13 @@ bool:HasMaliciousCfg(String:sample[256])
 
 public Action:ReadConfig()
 {
-	BuildPath(Path_SM, fileName, sizeof(fileName), "configs/nt_cfghelper_phrases.ini");
-	new Handle:file = OpenFile(fileName, "r");
+	BuildPath(Path_SM, g_fileName, sizeof(g_fileName), "configs/nt_cfghelper_phrases.ini");
+	new Handle:file = OpenFile(g_fileName, "r");
 
 	if (file == INVALID_HANDLE)
 	{
-		LogError("[nt cfg helper] Couldn't read from %s", fileName);
-		SetFailState("Couldn't read from %s", fileName);
+		LogError("[nt cfg helper] Couldn't read from %s", g_fileName);
+		SetFailState("Couldn't read from %s", g_fileName);
 	}
 	
 	while (!IsEndOfFile(file))
@@ -284,8 +286,8 @@ public Action:ReadConfig()
 		if (strlen(line) == 0 || (line[0] == '/' && line[1] == '/'))
 			continue;
 
-		strcopy(phrases[lines], sizeof(phrases[]), line);
-		lines++;
+		strcopy(g_phrases[g_lines], sizeof(g_phrases[]), line);
+		g_lines++;
 	}
 	
 	CloseHandle(file);
