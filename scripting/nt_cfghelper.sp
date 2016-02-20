@@ -73,22 +73,27 @@ public OnClientDisconnect(client)
 
 public Action:Command_CancelRebind(client, args)
 {
-	// ignore cmd if not relevant to player
-	if (g_rebindPreference[client] == NONE)
-		return Plugin_Stop;
-	
-	else if (g_rebindPreference[client] == YES)
+	switch (g_rebindPreference[client])
 	{
-		g_rebindPreference[client] = NO;
-		PrintToChat(client, "[SM] Ok, won't rebind your keys to default.");
+		case YES:
+		{
+			g_rebindPreference[client] = NO;
+			PrintToChat(client, "[SM] Ok, won't rebind your keys to default.");
+		}
+		
+		case NO:
+		{
+			g_rebindPreference[client] = YES;
+			PrintToChat(client, "[SM] Ok, will rebind your keys to default.");
+		}
+		
+		// ignore cmd if not relevant to player
+		case NONE:
+		{
+			return Plugin_Stop;
+		}
 	}
 	
-	else
-	{
-		g_rebindPreference[client] = YES;
-		PrintToChat(client, "[SM] Ok, will rebind your keys to default.");
-	}
-
 	return Plugin_Handled;
 }
 
