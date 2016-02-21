@@ -10,7 +10,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.5"
+#define PLUGIN_VERSION "1.5.1"
 
 #define PHRASES_MAX_AMOUNT 32
 #define PHRASES_MAX_LENGTH 32
@@ -220,7 +220,7 @@ public Action:SayCallback(client, const String:command[], argc)
 void PrintToAdmins(const String:message[], any ...)
 {
 	decl String:formatMsg[512];
-	VFormat(formatMsg, sizeof(formatMsg), message, 4);
+	VFormat(formatMsg, sizeof(formatMsg), message, 2);
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
