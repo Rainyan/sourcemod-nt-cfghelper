@@ -48,12 +48,8 @@ public OnPluginStart()
 	RegConsoleCmd("sm_stop", Command_CancelRebind);
 	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
 
-	RegAdminCmd("sm_fixconfig", Command_FixConfig, ADMFLAG_KICK, "Admin command to suggest rebinding to default");
-}
-
-public OnConfigsExecuted()
-{
 	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
+	RegAdminCmd("sm_fixconfig", Command_FixConfig, ADMFLAG_KICK, "Admin command to suggest rebinding to default");
 }
 
 public OnMapStart()
