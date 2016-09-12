@@ -53,16 +53,12 @@ public OnPluginStart()
 
 public OnConfigsExecuted()
 {
-	ReadConfig();
 	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
 }
 
 public OnMapStart()
 {
-	for(new i; i < g_lines; i++)
-		g_phrases[i] = "";
-
-	g_lines = 0;
+	ReadConfig();
 }
 
 public OnClientDisconnect(client)
@@ -266,6 +262,14 @@ bool HasMaliciousCfg(const String:sample[256])
 
 void ReadConfig()
 {
+	// Clear old phrases
+	for(new i; i < g_lines; i++)
+	{
+		g_phrases[i] = "";
+	}
+	g_lines = 0;
+
+	// Build path to phrases config
 	BuildPath(Path_SM, g_fileName, sizeof(g_fileName), "configs/nt_cfghelper_phrases.ini");
 	new Handle:file = OpenFile(g_fileName, "r");
 
