@@ -79,7 +79,7 @@ public Action:Command_CancelRebind(client, args)
 			PrintToChat(client, "[SM] Ok, will rebind your keys to default.");
 		}
 
-		// ignore cmd if not relevant to player
+		// Ignore command if not relevant to player
 		case NONE:
 		{
 			return Plugin_Stop;
@@ -133,7 +133,7 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 	new userid = GetEventInt(event, "userid");
 	new client = GetClientOfUserId(userid);
 
-	decl String:clientName[256];
+	decl String:clientName[MAX_NAME_LENGTH];
 	GetClientName(client, clientName, sizeof(clientName));
 
 	if (HasMaliciousCfg(clientName))
@@ -232,25 +232,36 @@ bool IsValidAdmin(client)
 	return false;
 }
 
-bool HasMaliciousCfg(const String:sample[256])
+bool HasMaliciousCfg(const String:sample[])
 {
-	new String:cleanedMessage[sizeof(sample) + 1];
+	//PrintToServer("Test Sample: %s", sample);
+
+	decl String:cleanedMessage[strlen(sample) + 1];
 	new pos_cleanedMessage;
 
 	// Trim all non-alphanumeric characters
-	for (new i = 0; i < sizeof(sample); i++)
+	for (new i = 0; i < strlen(sample); i++)
 	{
-		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
-			cleanedMessage[pos_cleanedMessage++] = sample[i];
-	}
+		//PrintToServer("Strlen: %i", strlen(sample));
 
-	// Terminate the string with 0
-	cleanedMessage[pos_cleanedMessage] = '\0';
+		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
+		{
+			//PrintToServer("True, copying over character %c", sample[i]);
+			cleanedMessage[pos_cleanedMessage] = sample[i];
+			pos_cleanedMessage++;
+		}
+	}
+	cleanedMessage[pos_cleanedMessage] = 0; // string terminator
+
+	//PrintToServer("Cleaned Sample: %s", cleanedMessage);
 
 	for (new i = 0; i < g_lines; i++)
 	{
 		if (StrContains(cleanedMessage, g_phrases[i], false) != -1)
+		{
+			//PrintToServer("Cleaned msg %s contains phrase %s", cleanedMessage, g_phrases[i]);
 			return true;
+		}
 	}
 
 	return false;
