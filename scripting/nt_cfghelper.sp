@@ -50,10 +50,7 @@ public OnPluginStart()
 
 	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
 	RegAdminCmd("sm_fixconfig", Command_FixConfig, ADMFLAG_KICK, "Admin command to suggest rebinding to default");
-}
 
-public OnMapStart()
-{
 	ReadConfig();
 }
 
