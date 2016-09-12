@@ -231,16 +231,17 @@ bool IsValidAdmin(client)
 
 bool HasMaliciousCfg(const String:sample[])
 {
-	if (strlen(sample) < 1)
-		ThrowError("Message sample is %i length, expected at least 1.", strlen(sample));
-
 	//PrintToServer("Test Sample: %s", sample);
+	new sampleLength = strlen(sample);
 
-	decl String:cleanedMessage[strlen(sample) + 1];
+	if (sampleLength < 1)
+		ThrowError("Message sample is %i length, expected at least 1.", sampleLength);
+
+	decl String:cleanedMessage[sampleLength + 1];
 	new pos_cleanedMessage;
 
 	// Trim all non-alphanumeric characters
-	for (new i = 0; i < strlen(sample); i++)
+	for (new i = 0; i < sampleLength; i++)
 	{
 		//PrintToServer("Strlen: %i", strlen(sample));
 
