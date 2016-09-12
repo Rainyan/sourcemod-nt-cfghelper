@@ -231,6 +231,9 @@ bool IsValidAdmin(client)
 
 bool HasMaliciousCfg(const String:sample[])
 {
+	if (strlen(sample) < 1)
+		ThrowError("Message sample is %i length, expected at least 1.", strlen(sample));
+
 	//PrintToServer("Test Sample: %s", sample);
 
 	decl String:cleanedMessage[strlen(sample) + 1];
