@@ -23,14 +23,14 @@ enum {
 	NO
 };
 
-new g_lines;
-new g_chatSpamDetections[MAXPLAYERS+1];
-new g_rebindPreference[MAXPLAYERS+1];
+int g_lines;
+int g_chatSpamDetections[MAXPLAYERS+1];
+int g_rebindPreference[MAXPLAYERS+1];
 
-new String:g_fileName[PLATFORM_MAX_PATH];
-new String:g_phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
+char g_fileName[PLATFORM_MAX_PATH];
+char g_phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
 
-public Plugin:myinfo =
+public Plugin myinfo =
 {
 	name = "NT Malicious CFG Helper",
 	author = "Rain",
@@ -39,7 +39,7 @@ public Plugin:myinfo =
 	url = ""
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	AddCommandListener(SayCallback, "say");
 	AddCommandListener(SayCallback, "say_team");
@@ -56,13 +56,13 @@ public OnPluginStart()
 	ReadConfig();
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
 	g_chatSpamDetections[client] = 0;
 	g_rebindPreference[client] = NONE;
 }
 
-public Action:Command_CancelRebind(client, args)
+public Action Command_CancelRebind(int client, int args)
 {
 	switch (g_rebindPreference[client])
 	{
@@ -88,7 +88,7 @@ public Action:Command_CancelRebind(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_FixConfig(client, args)
+public Action Command_FixConfig(int client, int args)
 {
 	if (args != 1)
 	{
@@ -96,10 +96,10 @@ public Action:Command_FixConfig(client, args)
 		return Plugin_Handled;
 	}
 
-	new String:arg1[MAX_NAME_LENGTH];
+	char arg1[MAX_NAME_LENGTH];
 	GetCmdArg(1, arg1, sizeof(arg1));
 
-	new target = FindTarget(client, arg1);
+	int target = FindTarget(client, arg1);
 
 	if (target == -1)
 		return Plugin_Handled;
@@ -114,23 +114,23 @@ public Action:Command_FixConfig(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_FixMyConfig(client, args)
+public Action Command_FixMyConfig(int client, int args)
 {
 	OfferRebind(client);
 	return Plugin_Handled;
 }
 
-public Action:Command_ReloadPhrases(client, args)
+public Action Command_ReloadPhrases(int client, int args)
 {
 	ReadConfig();
 	ReplyToCommand(client, "[SM] CFG Helper filter phrases reloaded");
 	return Plugin_Handled;
 }
 
-public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_NameCheck(Handle event, const char[] name, bool dontBroadcast)
 {
-	new userid = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(userid);
+	int userid = GetEventInt(event, "userid");
+	int client = GetClientOfUserId(userid);
 
 	decl String:clientName[MAX_NAME_LENGTH];
 	GetClientName(client, clientName, sizeof(clientName));
@@ -146,13 +146,13 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 	return Plugin_Continue;
 }
 
-public Action:Timer_Rebind(Handle:timer, DataPack:data)
+public Action Timer_Rebind(Handle timer, DataPack data)
 {
-	new String:steamid[MAX_STEAMID_LENGTH];
+	char steamid[MAX_STEAMID_LENGTH];
 	data.Reset();
 	data.ReadString(steamid, sizeof(steamid));
 
-	new client = GetClientOfAuthId(steamid);
+	int client = GetClientOfAuthId(steamid);
 	if (!client)
 		return Plugin_Stop;
 
@@ -177,7 +177,7 @@ public Action:Timer_Rebind(Handle:timer, DataPack:data)
 	return Plugin_Handled;
 }
 
-public Action:SayCallback(client, const String:command[], argc)
+public Action SayCallback(int client, const char[] command, int argc)
 {
 	if (!client) // Message sent by server, don't bother checking
 		return Plugin_Continue;
@@ -218,12 +218,12 @@ public Action:SayCallback(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-void PrintToAdmins(const String:message[], any ...)
+void PrintToAdmins(const char[] message, any ...)
 {
 	decl String:formatMsg[512];
 	VFormat(formatMsg, sizeof(formatMsg), message, 2);
 
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsValidAdmin(i))
 			continue;
@@ -233,30 +233,30 @@ void PrintToAdmins(const String:message[], any ...)
 	}
 }
 
-bool IsValidAdmin(client)
+bool IsValidAdmin(int client)
 {
 	if ((CheckCommandAccess(client, "sm_kick", ADMFLAG_KICK)) && (IsClientConnected(client)) && (!IsFakeClient(client)))
+	{
 		return true;
-
+	}
 	return false;
 }
 
-bool HasMaliciousCfg(const String:sample[])
+bool HasMaliciousCfg(const char[] sample)
 {
 #if defined DEBUG
 	PrintToServer("Test Sample: %s", sample);
 #endif
 
-	new sampleLength = strlen(sample);
-
+	int sampleLength = strlen(sample);
 	if (sampleLength < 1)
 		ThrowError("Message sample is %i length, expected at least 1.", sampleLength);
 
 	decl String:cleanedMessage[sampleLength + 1];
-	new pos_cleanedMessage;
+	int pos_cleanedMessage;
 
 	// Trim all non-alphanumeric characters
-	for (new i = 0; i < sampleLength; i++)
+	for (int i = 0; i < sampleLength; i++)
 	{
 #if defined DEBUG
 		PrintToServer("Strlen: %i", strlen(sample));
@@ -276,7 +276,7 @@ bool HasMaliciousCfg(const String:sample[])
 	PrintToServer("Cleaned Sample: %s", cleanedMessage);
 #endif
 
-	for (new i = 0; i < g_lines; i++)
+	for (int i = 0; i < g_lines; i++)
 	{
 		if (StrContains(cleanedMessage, g_phrases[i], false) != -1)
 		{
@@ -293,7 +293,7 @@ bool HasMaliciousCfg(const String:sample[])
 void ReadConfig()
 {
 	// Clear old phrases
-	for(new i; i < g_lines; i++)
+	for(int i = 0; i < g_lines; i++)
 	{
 		g_phrases[i] = "";
 	}
@@ -301,7 +301,7 @@ void ReadConfig()
 
 	// Build path to phrases config
 	BuildPath(Path_SM, g_fileName, sizeof(g_fileName), "configs/nt_cfghelper_phrases.ini");
-	new Handle:file = OpenFile(g_fileName, "r");
+	Handle file = OpenFile(g_fileName, "r");
 
 	if (file == INVALID_HANDLE)
 		ThrowError("Couldn't read from %s", g_fileName);
@@ -324,7 +324,7 @@ void ReadConfig()
 	CloseHandle(file);
 }
 
-void OfferRebind(client)
+void OfferRebind(int client)
 {
 	if (!IsValidClient(client) || IsFakeClient(client) || !IsClientAuthorized(client))
 		return;
@@ -333,7 +333,7 @@ void OfferRebind(client)
 	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
 	PrintToChat(client, "Type !stop to cancel.");
 
-	new String:steamid[MAX_STEAMID_LENGTH];
+	char steamid[MAX_STEAMID_LENGTH];
 	GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
 
 	DataPack data = new DataPack();
@@ -342,7 +342,7 @@ void OfferRebind(client)
 	CreateDataTimer(10.0, Timer_Rebind, data);
 }
 
-bool IsValidClient(client)
+bool IsValidClient(int client)
 {
 	if (client < 1 || client > MaxClients || !IsClientInGame(client))
 		return false;
@@ -350,9 +350,9 @@ bool IsValidClient(client)
 	return true;
 }
 
-int GetClientOfAuthId(const String:steamid[])
+int GetClientOfAuthId(const char[] steamid)
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsValidClient(i) || IsFakeClient(i) || !IsClientAuthorized(i))
 			continue;
