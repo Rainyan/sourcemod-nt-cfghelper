@@ -170,6 +170,7 @@ public Action Timer_Rebind(Handle timer, DataPack data)
 	char steamid[MAX_STEAMID_LENGTH];
 	data.Reset();
 	data.ReadString(steamid, sizeof(steamid));
+	CloseHandle(data);
 
 	int client = GetClientOfAuthId(steamid);
 	if (!client)
@@ -410,7 +411,7 @@ void OfferRebind(int client)
 	DataPack data = new DataPack();
 	data.WriteString(steamid);
 
-	CreateDataTimer(10.0, Timer_Rebind, data);
+	CreateTimer(10.0, Timer_Rebind, data);
 }
 
 bool IsValidClient(int client)
