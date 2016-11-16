@@ -168,7 +168,7 @@ public Action:Timer_Rebind(Handle:timer, DataPack:data)
 	else
 	{
 		PrintToChat(client, "[SM] No rebinding done as requested.");
-		PrintToChat(client, "However, you will be gagged until the next map.");
+		PrintToChat(client, "However, you will remain chat blocked until the next map.");
 	}
 
 	g_rebindPreference[client] = NONE;
