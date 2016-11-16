@@ -377,7 +377,7 @@ void ReadConfig()
 	if (file == INVALID_HANDLE)
 		ThrowError("Couldn't read from %s", g_configFileName);
 
-	decl String:line[64];
+	decl String:line[PHRASES_MAX_LENGTH+1];
 	while (!IsEndOfFile(file))
 	{
 		if (!ReadFileLine(file, line, sizeof(line)))
