@@ -365,7 +365,7 @@ falling back to regular logging!");
 		return;
 	}
 
-	BuildPath(Path_SM, g_logPath, sizeof(g_logPath), "logs/%s", customLogPath);
+	BuildPath(Path_SM, g_logPath, sizeof(g_logPath), "logs/%s.log", customLogPath);
 
 	Handle file = OpenFile(g_logPath, "a");
 	if (file == null)
