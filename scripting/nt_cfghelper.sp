@@ -11,6 +11,7 @@
 #include <basecomm>
 
 #define PLUGIN_VERSION "1.5.2"
+//#define DEBUG
 
 #define MAX_STEAMID_LENGTH 44
 #define PHRASES_MAX_AMOUNT 32
@@ -242,7 +243,10 @@ bool IsValidAdmin(client)
 
 bool HasMaliciousCfg(const String:sample[])
 {
-	//PrintToServer("Test Sample: %s", sample);
+#if defined DEBUG
+	PrintToServer("Test Sample: %s", sample);
+#endif
+
 	new sampleLength = strlen(sample);
 
 	if (sampleLength < 1)
@@ -254,24 +258,31 @@ bool HasMaliciousCfg(const String:sample[])
 	// Trim all non-alphanumeric characters
 	for (new i = 0; i < sampleLength; i++)
 	{
-		//PrintToServer("Strlen: %i", strlen(sample));
-
+#if defined DEBUG
+		PrintToServer("Strlen: %i", strlen(sample));
+#endif
 		if (IsCharAlpha(sample[i]) || IsCharNumeric(sample[i]))
 		{
-			//PrintToServer("True, copying over character %c", sample[i]);
+#if defined DEBUG
+			PrintToServer("True, copying over character %c", sample[i]);
+#endif
 			cleanedMessage[pos_cleanedMessage] = sample[i];
 			pos_cleanedMessage++;
 		}
 	}
 	cleanedMessage[pos_cleanedMessage] = 0; // string terminator
 
-	//PrintToServer("Cleaned Sample: %s", cleanedMessage);
+#if defined DEBUG
+	PrintToServer("Cleaned Sample: %s", cleanedMessage);
+#endif
 
 	for (new i = 0; i < g_lines; i++)
 	{
 		if (StrContains(cleanedMessage, g_phrases[i], false) != -1)
 		{
-			//PrintToServer("Cleaned msg %s contains phrase %s", cleanedMessage, g_phrases[i]);
+#if defined DEBUG
+			PrintToServer("Cleaned msg %s contains phrase %s", cleanedMessage, g_phrases[i]);
+#endif
 			return true;
 		}
 	}
