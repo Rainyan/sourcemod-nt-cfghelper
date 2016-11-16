@@ -27,8 +27,12 @@ int g_lines;
 int g_chatSpamDetections[MAXPLAYERS+1];
 int g_rebindPreference[MAXPLAYERS+1];
 
-char g_fileName[PLATFORM_MAX_PATH];
+char g_logPath[PLATFORM_MAX_PATH];
+char g_configFileName[PLATFORM_MAX_PATH];
 char g_phrases[PHRASES_MAX_AMOUNT][PHRASES_MAX_LENGTH];
+
+Handle g_hCvar_logPath;
+Handle g_hCvar_logType;
 
 public Plugin myinfo =
 {
@@ -53,7 +57,17 @@ public void OnPluginStart()
 	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
 	RegAdminCmd("sm_fixconfig", Command_FixConfig, ADMFLAG_KICK, "Admin command to suggest rebinding to default");
 
+	g_hCvar_logType = CreateConVar("sm_cfghelper_log_type", "1", "How to perform logging. 0 = don't log. 1 = log to server's default log file. 2 = log to custom log file.", _, true, 0.0, true, 2.0);
+	g_hCvar_logPath = CreateConVar("sm_cfghelper_log_path", "cfghelper", "If sm_cfghelper_log_type is set to 2, write logs to this SourceMod log file instead of server's default log file.", FCVAR_PROTECTED);
+
 	ReadConfig();
+}
+
+public void OnConfigsExecuted()
+{
+	InitializeLogFile();
+
+	HookConVarChange(g_hCvar_logType, Cvar_LogType);
 }
 
 public void OnClientDisconnect(int client)
@@ -199,7 +213,7 @@ public Action SayCallback(int client, const char[] command, int argc)
 			PrintToAdmins("\"%s\"", message);
 			PrintToAdmins("Blocked message, gagged, and instructed player on fixing configs.", " ");
 
-			LogToGame("[SM] Gagged %s for triggering the hacked cfg detection. Chat message spammed was: \"%s\".", clientName, message);
+			LogDetection("[SM] Gagged %s for triggering the hacked cfg detection. Chat message spammed was: \"%s\".", clientName, message);
 
 			PrintToChat(client, "[SM] You have been gagged for typing this message:");
 			PrintToChat(client, "\"%s\"", message);
@@ -216,6 +230,33 @@ public Action SayCallback(int client, const char[] command, int argc)
 	}
 
 	return Plugin_Continue;
+}
+
+void LogDetection(const char[] message, any ...)
+{
+	int logType = GetConVarInt(g_hCvar_logType);
+	if (logType == 0)
+		return;
+
+	decl String:formatMsg[512];
+	VFormat(formatMsg, sizeof(formatMsg), message, 2);
+
+	if (logType == 1)
+	{
+		LogToGame(formatMsg);
+	}
+	else
+	{
+		Handle file = OpenFile(g_logPath, "a");
+		if (file == null)
+		{
+			LogToGame(formatMsg);
+			ThrowError("Failed logging detection to custom path \"%s\", used the default server log instead.", g_logPath);
+		}
+
+		WriteFileLine(file, formatMsg);
+		CloseHandle(file);
+	}
 }
 
 void PrintToAdmins(const char[] message, any ...)
@@ -290,6 +331,35 @@ bool HasMaliciousCfg(const char[] sample)
 	return false;
 }
 
+void InitializeLogFile()
+{
+	if (GetConVarInt(g_hCvar_logType) != 2)
+		return;
+
+	HookConVarChange(g_hCvar_logPath, Cvar_LogPath);
+
+	char customLogPath[PLATFORM_MAX_PATH];
+	GetConVarString(g_hCvar_logPath, customLogPath, sizeof(customLogPath));
+
+	if (strlen(customLogPath) < 1)
+	{
+		LogError("nt_cfghelper's custom file path is 0 length, falling back to regular logging!");
+		SetConVarInt(g_hCvar_logType, 1);
+		return;
+	}
+
+	BuildPath(Path_SM, g_logPath, sizeof(g_logPath), "logs/%s", customLogPath);
+
+	Handle file = OpenFile(g_logPath, "a");
+	if (file == null)
+	{
+		LogError("nt_cfghelper is unable to write logs at \"%s\", falling back to regular logging!", g_logPath);
+		SetConVarInt(g_hCvar_logType, 1);
+		return;
+	}
+	CloseHandle(file);
+}
+
 void ReadConfig()
 {
 	// Clear old phrases
@@ -300,11 +370,11 @@ void ReadConfig()
 	g_lines = 0;
 
 	// Build path to phrases config
-	BuildPath(Path_SM, g_fileName, sizeof(g_fileName), "configs/nt_cfghelper_phrases.ini");
-	Handle file = OpenFile(g_fileName, "r");
+	BuildPath(Path_SM, g_configFileName, sizeof(g_configFileName), "configs/nt_cfghelper_phrases.ini");
 
+	Handle file = OpenFile(g_configFileName, "r");
 	if (file == INVALID_HANDLE)
-		ThrowError("Couldn't read from %s", g_fileName);
+		ThrowError("Couldn't read from %s", g_configFileName);
 
 	decl String:line[64];
 	while (!IsEndOfFile(file))
@@ -364,4 +434,31 @@ int GetClientOfAuthId(const char[] steamid)
 			return i;
 	}
 	return 0;
+}
+
+public void Cvar_LogPath(ConVar cvar, const char[] oldVal, const char[] newVal)
+{
+	// Custom path isn't currently being used, there's no need to initialize it yet
+	if (GetConVarInt(g_hCvar_logType) != 2)
+		return;
+
+	InitializeLogFile();
+}
+
+public void Cvar_LogType(ConVar cvar, const char[] oldVal, const char[] newVal)
+{
+	int iOld = StringToInt(oldVal);
+	int iNew = StringToInt(newVal);
+
+	// Switched to custom cvar log path
+	if (iNew == 2 && iOld != 2)
+	{
+		HookConVarChange(g_hCvar_logPath, Cvar_LogPath);
+		InitializeLogFile();
+	}
+	// Switched away from custom cvar log path
+	else if (iNew != 2 && iOld == 2)
+	{
+		UnhookConVarChange(g_hCvar_logPath, Cvar_LogPath);
+	}
 }
