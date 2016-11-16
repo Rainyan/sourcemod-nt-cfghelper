@@ -156,7 +156,7 @@ public Action Event_NameCheck(Handle event, const char[] name, bool dontBroadcas
 public Action Timer_NameCheck(Handle timer, any userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (!client)
+	if (!client || IsFakeClient(client))
 		return Plugin_Stop;
 
 	decl String:clientName[MAX_NAME_LENGTH];
