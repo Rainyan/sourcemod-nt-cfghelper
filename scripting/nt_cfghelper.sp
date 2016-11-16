@@ -47,7 +47,7 @@ public void OnPluginStart()
 	HookEvent("player_activate", Event_NameCheck, EventHookMode_Pre);
 	HookEvent("player_changename", Event_NameCheck, EventHookMode_Pre);
 
-	RegConsoleCmd("sm_stop", Command_CancelRebind);
+	RegConsoleCmd("sm_cfg_stop", Command_CancelRebind);
 	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
 
 	RegAdminCmd("sm_cfghelper_reload", Command_ReloadPhrases, ADMFLAG_KICK, "Reload CFG Helper filter phrases");
@@ -331,7 +331,7 @@ void OfferRebind(int client)
 
 	g_rebindPreference[client] = YES;
 	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
-	PrintToChat(client, "Type !stop to cancel.");
+	PrintToChat(client, "Type !cfg_stop to cancel.");
 
 	char steamid[MAX_STEAMID_LENGTH];
 	GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
