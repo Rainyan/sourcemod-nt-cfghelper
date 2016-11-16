@@ -1,8 +1,8 @@
 /*
 	Phrase reading from .ini file borrowed from
-	"Bad name ban" by vIr-Dan and Lebson506th as per the SourceMod licence.
+	"Bad name ban" by vIr-Dan and Lebson506th as per the GPLv3 licence.
 	https://forums.alliedmods.net/showthread.php?p=498974?p=498974
-	http://www.sourcemod.net/license.php
+	https://www.gnu.org/licenses/gpl-3.0.en.html
 */
 
 #pragma semicolon 1
