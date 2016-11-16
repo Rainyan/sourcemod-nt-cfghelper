@@ -159,6 +159,12 @@ public Action Event_NameCheck(Handle event, const char[] name, bool dontBroadcas
 		ClientCommand(client, "name NeotokyoNoob");
 		PrintToChat(client, "[SM] You were renamed to \"NeotokyoNoob\".");
 		PrintToChat(client, "Your name was previously set to: \"%s\"", clientName);
+
+		char steamid[MAX_STEAMID_LENGTH];
+		GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
+
+		LogDetection("[SM] Client \"%s\" triggered the name filter using the name \"%s\". \
+Reverted their name to NeotokyoNoob.", steamid, clientName);
 		return Plugin_Stop;
 	}
 
