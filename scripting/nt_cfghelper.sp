@@ -248,9 +248,13 @@ void LogDetection(const char[] message, any ...)
 	decl String:formatMsg[512];
 	VFormat(formatMsg, sizeof(formatMsg), message, 2);
 
+	// Get current time
+	decl String:timestamp[128];
+	FormatTime(timestamp, sizeof(timestamp), NULL_STRING);
+
 	if (logType == 1)
 	{
-		LogToGame(formatMsg);
+		LogToGame("%s: %s", timestamp, formatMsg);
 	}
 	else
 	{
@@ -262,7 +266,7 @@ void LogDetection(const char[] message, any ...)
 used the default server log instead.", g_logPath);
 		}
 
-		WriteFileLine(file, formatMsg);
+		WriteFileLine(file, "%s: %s", timestamp, formatMsg);
 		CloseHandle(file);
 	}
 }
