@@ -281,18 +281,6 @@ void PrintToAdmins(const char[] message, any ...)
 	}
 }
 
-bool IsValidAdmin(int client)
-{
-	if (!IsValidClient(client) || IsFakeClient(client))
-		return false;
-
-	AdminId admin = GetUserAdmin(client);
-	if (admin == INVALID_ADMIN_ID)
-		return false;
-
-	return GetAdminFlag(admin, Admin_Generic);
-}
-
 bool HasMaliciousCfg(const char[] sample)
 {
 #if defined DEBUG
@@ -431,6 +419,18 @@ bool IsValidClient(int client)
 		return false;
 
 	return true;
+}
+
+bool IsValidAdmin(int client)
+{
+	if (!IsValidClient(client) || IsFakeClient(client))
+		return false;
+
+	AdminId admin = GetUserAdmin(client);
+	if (admin == INVALID_ADMIN_ID)
+		return false;
+
+	return GetAdminFlag(admin, Admin_Generic);
 }
 
 int GetClientOfAuthId(const char[] steamid)
