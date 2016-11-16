@@ -7,3 +7,6 @@ It uses a filter to detect affected players, and automatically suggests/rebinds 
 game defaults.<br />
 
 Created for Neotokyo, but should work for any Source SDK 2006 game. Newer Source games generally block the <i>ClientCommand</i> used here (which probably means you wouldn't need this plugin anyway).
+
+### Server dependencies
+SourceMod 1.7 or newer.
