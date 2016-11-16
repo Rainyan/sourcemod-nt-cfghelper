@@ -213,7 +213,8 @@ public Action SayCallback(int client, const char[] command, int argc)
 			PrintToAdmins("\"%s\"", message);
 			PrintToAdmins("Blocked message, gagged, and instructed player on fixing configs.", " ");
 
-			LogDetection("[SM] Gagged %s for triggering the hacked cfg detection. Chat message spammed was: \"%s\".", clientName, message);
+			LogDetection("[SM] Gagged %s for triggering the hacked cfg detection. \
+Chat message spammed was: \"%s\".", clientName, message);
 
 			PrintToChat(client, "[SM] You have been gagged for typing this message:");
 			PrintToChat(client, "\"%s\"", message);
@@ -251,7 +252,8 @@ void LogDetection(const char[] message, any ...)
 		if (file == null)
 		{
 			LogToGame(formatMsg);
-			ThrowError("Failed logging detection to custom path \"%s\", used the default server log instead.", g_logPath);
+			ThrowError("Failed logging detection to custom path \"%s\", \
+used the default server log instead.", g_logPath);
 		}
 
 		WriteFileLine(file, formatMsg);
@@ -343,7 +345,8 @@ void InitializeLogFile()
 
 	if (strlen(customLogPath) < 1)
 	{
-		LogError("nt_cfghelper's custom file path is 0 length, falling back to regular logging!");
+		LogError("nt_cfghelper's custom file path is 0 length, \
+falling back to regular logging!");
 		SetConVarInt(g_hCvar_logType, 1);
 		return;
 	}
@@ -353,7 +356,8 @@ void InitializeLogFile()
 	Handle file = OpenFile(g_logPath, "a");
 	if (file == null)
 	{
-		LogError("nt_cfghelper is unable to write logs at \"%s\", falling back to regular logging!", g_logPath);
+		LogError("nt_cfghelper is unable to write logs at \"%s\", \
+falling back to regular logging!", g_logPath);
 		SetConVarInt(g_hCvar_logType, 1);
 		return;
 	}
@@ -370,7 +374,8 @@ void ReadConfig()
 	g_lines = 0;
 
 	// Build path to phrases config
-	BuildPath(Path_SM, g_configFileName, sizeof(g_configFileName), "configs/nt_cfghelper_phrases.ini");
+	BuildPath(Path_SM, g_configFileName, sizeof(g_configFileName),
+		"configs/nt_cfghelper_phrases.ini");
 
 	Handle file = OpenFile(g_configFileName, "r");
 	if (file == INVALID_HANDLE)
