@@ -181,7 +181,7 @@ public Action:SayCallback(client, const String:command[], argc)
 	if (!client) // Message sent by server, don't bother checking
 		return Plugin_Continue;
 
-	new String:message[256];
+	decl String:message[256];
 	GetCmdArgString(message, sizeof(message));
 
 	if (HasMaliciousCfg(message))
@@ -191,7 +191,7 @@ public Action:SayCallback(client, const String:command[], argc)
 		{
 			BaseComm_SetClientGag(client, true);
 
-			decl String:clientName[256];
+			decl String:clientName[MAX_NAME_LENGTH];
 			GetClientName(client, clientName, sizeof(clientName));
 
 			PrintToAdmins("To admins: %s triggered hacked cfg detection by typing:", clientName);
