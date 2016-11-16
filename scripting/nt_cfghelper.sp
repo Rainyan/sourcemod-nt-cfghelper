@@ -66,6 +66,7 @@ public void OnPluginStart()
 	g_hCvar_logPath = CreateConVar("sm_cfghelper_log_path", "cfghelper", "If sm_cfghelper_log_type is set to 2, write logs to this SourceMod log file instead of server's default log file.", FCVAR_PROTECTED);
 
 	ReadConfig();
+	AutoExecConfig(true);
 }
 
 public void OnConfigsExecuted()
