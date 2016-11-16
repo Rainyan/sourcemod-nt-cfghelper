@@ -1,8 +1,13 @@
 /*
-	Phrase reading from .ini file borrowed from
-	"Bad name ban" by vIr-Dan and Lebson506th as per the GPLv3 licence.
-	https://forums.alliedmods.net/showthread.php?p=498974?p=498974
+	GPLv3
 	https://www.gnu.org/licenses/gpl-3.0.en.html
+
+	Phrase reading from .ini file borrowed from
+	"Bad name ban" by vIr-Dan and Lebson506th:
+	https://forums.alliedmods.net/showthread.php?p=498974?p=498974
+
+	IsValidAdmin based on SMLib's Client_IsAdmin:
+	https://github.com/bcserv/smlib
 */
 
 #pragma semicolon 1
@@ -278,11 +283,14 @@ void PrintToAdmins(const char[] message, any ...)
 
 bool IsValidAdmin(int client)
 {
-	if ((CheckCommandAccess(client, "sm_kick", ADMFLAG_KICK)) && (IsClientConnected(client)) && (!IsFakeClient(client)))
-	{
-		return true;
-	}
-	return false;
+	if (!IsValidClient(client) || IsFakeClient(client))
+		return false;
+
+	AdminId admin = GetUserAdmin(client);
+	if (admin == INVALID_ADMIN_ID)
+		return false;
+
+	return GetAdminFlag(admin, Admin_Generic);
 }
 
 bool HasMaliciousCfg(const char[] sample)
