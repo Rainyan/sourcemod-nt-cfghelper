@@ -15,7 +15,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.5.2"
+#define PLUGIN_VERSION "1.6.0"
 //#define DEBUG
 
 #define MAX_STEAMID_LENGTH 44
@@ -45,7 +45,7 @@ public Plugin myinfo =
 	author = "Rain",
 	description = "Help players whose config appears maliciously overwritten",
 	version = PLUGIN_VERSION,
-	url = ""
+	url = "https://github.com/Rainyan/sourcemod-nt-cfghelper"
 };
 
 public void OnPluginStart()
