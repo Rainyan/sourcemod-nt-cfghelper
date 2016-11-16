@@ -53,8 +53,8 @@ public void OnPluginStart()
 	AddCommandListener(SayCallback, "say");
 	AddCommandListener(SayCallback, "say_team");
 
-	HookEvent("player_activate", Event_NameCheck, EventHookMode_Pre);
-	HookEvent("player_changename", Event_NameCheck, EventHookMode_Pre);
+	HookEvent("player_activate", Event_NameCheck);
+	HookEvent("player_changename", Event_NameCheck);
 
 	RegConsoleCmd("sm_cfg_stop", Command_CancelRebind);
 	RegConsoleCmd("sm_fixmyconfig", Command_FixMyConfig);
@@ -149,7 +149,14 @@ public Action Command_ReloadPhrases(int client, int args)
 public Action Event_NameCheck(Handle event, const char[] name, bool dontBroadcast)
 {
 	int userid = GetEventInt(event, "userid");
+	CreateTimer(5.0, Timer_NameCheck, userid);
+}
+
+public Action Timer_NameCheck(Handle timer, any userid)
+{
 	int client = GetClientOfUserId(userid);
+	if (!client)
+		return Plugin_Stop;
 
 	decl String:clientName[MAX_NAME_LENGTH];
 	GetClientName(client, clientName, sizeof(clientName));
