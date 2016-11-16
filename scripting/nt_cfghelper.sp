@@ -12,6 +12,7 @@
 
 #define PLUGIN_VERSION "1.5.2"
 
+#define MAX_STEAMID_LENGTH 44
 #define PHRASES_MAX_AMOUNT 32
 #define PHRASES_MAX_LENGTH 32
 
@@ -144,8 +145,16 @@ public Action:Event_NameCheck(Handle:event, const String:name[], bool:dontBroadc
 	return Plugin_Continue;
 }
 
-public Action:Timer_Rebind(Handle:timer, any:client)
+public Action:Timer_Rebind(Handle:timer, DataPack:data)
 {
+	new String:steamid[MAX_STEAMID_LENGTH];
+	data.Reset();
+	data.ReadString(steamid, sizeof(steamid));
+
+	new client = GetClientOfAuthId(steamid);
+	if (!client)
+		return Plugin_Stop;
+
 	if (g_rebindPreference[client] == YES)
 	{
 		g_rebindPreference[client] = NONE;
@@ -163,6 +172,8 @@ public Action:Timer_Rebind(Handle:timer, any:client)
 	}
 
 	g_rebindPreference[client] = NONE;
+
+	return Plugin_Handled;
 }
 
 public Action:SayCallback(client, const String:command[], argc)
@@ -304,8 +315,42 @@ void ReadConfig()
 
 void OfferRebind(client)
 {
+	if (!IsValidClient(client) || IsFakeClient(client) || !IsClientAuthorized(client))
+		return;
+
 	g_rebindPreference[client] = YES;
 	PrintToChat(client, "Going to automatically rebind keys to default in 10 seconds...");
 	PrintToChat(client, "Type !stop to cancel.");
-	CreateTimer(10.0, Timer_Rebind, client);
+
+	new String:steamid[MAX_STEAMID_LENGTH];
+	GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
+
+	DataPack data = new DataPack();
+	data.WriteString(steamid);
+
+	CreateDataTimer(10.0, Timer_Rebind, data);
+}
+
+bool IsValidClient(client)
+{
+	if (client < 1 || client > MaxClients || !IsClientInGame(client))
+		return false;
+
+	return true;
+}
+
+int GetClientOfAuthId(const String:steamid[])
+{
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		if (!IsValidClient(i) || IsFakeClient(i) || !IsClientAuthorized(i))
+			continue;
+
+		decl String:steamidBuffer[MAX_STEAMID_LENGTH];
+		GetClientAuthId(i, AuthId_Steam2, steamidBuffer, sizeof(steamidBuffer));
+
+		if (StrEqual(steamid, steamidBuffer))
+			return i;
+	}
+	return 0;
 }
