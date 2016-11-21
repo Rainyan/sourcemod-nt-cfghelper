@@ -360,10 +360,8 @@ void InitializeLogFile()
 
 	if (strlen(customLogPath) < 1)
 	{
-		LogError("nt_cfghelper's custom file path is 0 length, \
-falling back to regular logging!");
 		SetConVarInt(g_hCvar_logType, 1);
-		return;
+		ThrowError("Custom file path is 0 length, falling back to regular logging!");
 	}
 
 	BuildPath(Path_SM, g_logPath, sizeof(g_logPath), "logs/%s.log", customLogPath);
@@ -371,10 +369,9 @@ falling back to regular logging!");
 	Handle file = OpenFile(g_logPath, "a");
 	if (file == null)
 	{
-		LogError("nt_cfghelper is unable to write logs at \"%s\", \
-falling back to regular logging!", g_logPath);
 		SetConVarInt(g_hCvar_logType, 1);
-		return;
+		ThrowError("Unable to write logs at \"%s\", falling back to regular logging!",
+			g_logPath);
 	}
 	CloseHandle(file);
 }
