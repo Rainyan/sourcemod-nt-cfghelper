@@ -15,7 +15,7 @@
 #include <sourcemod>
 #include <basecomm>
 
-#define PLUGIN_VERSION "1.6.0"
+#define PLUGIN_VERSION "1.7.0"
 //#define DEBUG
 
 #define MAX_STEAMID_LENGTH 44
@@ -151,6 +151,7 @@ public Action Event_NameCheck(Handle event, const char[] name, bool dontBroadcas
 {
 	int userid = GetEventInt(event, "userid");
 	CreateTimer(5.0, Timer_NameCheck, userid);
+	return Plugin_Continue;
 }
 
 public Action Timer_NameCheck(Handle timer, any userid)
